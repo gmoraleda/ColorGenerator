@@ -11,26 +11,23 @@ struct ColorGenerator: BuildToolPlugin {
 
         let assetCatalogPath = target.sourceFiles(withSuffix: "xcassets")
             .compactMap { assetCatalog in
-                assetCatalog.path
+                assetCatalog.path.string
             }
-            .first
+            .first ?? ""
 
-        if let assetCatalogPath {
-            let outputPath = assetCatalogPath.removingLastComponent().appending("Colors.swift")
-            let invocation = PluginInvocation(catalogPath: assetCatalogPath.string, outputPath: outputPath.string)
+        let outputPath = context.pluginWorkDirectory.appending(["Colors.swift"])
 
-            return try [
-                .buildCommand(
-                    displayName: "Generate Color Constants",
-                    executable: context.tool(named: "ColorGeneratorExec").path,
-                    arguments: [invocation.encodedString()],
-                    inputFiles: [],
-                    outputFiles: []
-                )
-            ]
-        } else {
-            return []
-        }
+        let invocation = PluginInvocation(catalogPath: assetCatalogPath, outputPath: outputPath.string)
+
+        return try [
+            .buildCommand(
+                displayName: "Generate Color Constants",
+                executable: context.tool(named: "ColorGeneratorExec").path,
+                arguments: [invocation.encodedString()],
+                inputFiles: [],
+                outputFiles: []
+            )
+        ]
     }
 }
 
